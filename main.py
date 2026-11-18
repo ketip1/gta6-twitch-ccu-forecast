@@ -73,8 +73,11 @@ SIGMA = {
 }
 
 # Guardrails for extreme anchors: keep the peak ratio in a sane band so a
-# very large hour-1 does not collapse the whole curve to zero.
-PEAK_RATIO_MIN = 0.55
+# very large hour-1 does not collapse the whole curve to zero. The floor is
+# deliberately above the unclamped prediction at the far end of the size
+# range (a multi-million hour-1 would otherwise predict a sharp all-day
+# decline), and the ceiling stops a tiny hour-1 multiplying absurdly.
+PEAK_RATIO_MIN = 0.60
 PEAK_RATIO_MAX = 6.0
 
 
