@@ -13,19 +13,24 @@ For each hour `h = 2..24` the forecast emits five quantiles (5%, 25%, 50%, 75%,
 q_tau(h) = p1 * exp(mu_h + z_tau * sigma_h)
 ```
 
-* `p1 = max(1, hour-1 viewers)` — the one observed anchor a case provides.
+* `p1 = max(1, hour-1 viewers)` — the single observed anchor a case provides.
 * `z_tau` — standard-normal quantiles at the five levels.
-* `mu_h`, `sigma_h` — a launch-shape curve fitted from the kit's comparables
-  (past big game launches): for each launch, `ln(viewers_h / viewers_1)` over its
-  release-UTC day; `mu_h` is the cross-launch median, `sigma_h` the IQR / 1.349
-  robust std, median-smoothed across hours.
+* `mu_h = shape_h * ln(peak_ratio)` where `shape_h` is a peak-normalised
+  canonical launch curve and `peak_ratio` is a **size effect**: bigger
+  launch-day hour-1 audiences flatten the curve
+  (`ln peak_ratio = b0 + b1 * ln p1`).
+* `sigma_h` — robust per-hour spread (IQR/1.349 of the residuals), median
+  smoothed across hours.
 
-The resulting curve dips through the early UTC hours, climbs to an evening peak
-around hours 18-19 (EU/US prime time, ~2.4x hour 1), then eases overnight.
+Both pieces are fitted over console releases that unlocked at rolling local
+midnight (GTA VI's own unlock). The curve dips through the early UTC hours,
+climbs to an evening peak around hours 18-21 (EU/US prime time), then eases
+overnight.
 
 Scoring is pinball loss on the log scale (lower is better). In leave-one-out
-evaluation over the comparables the model scores ~0.797 vs ~0.930 for the house
-baseline under the same per-launch setup.
+evaluation over the console rolling-midnight comparables, the size-aware model
+scores about **0.28** versus **~0.37** for the house persistence baseline under
+the same per-launch setup.
 
 ## Running
 
@@ -34,10 +39,4 @@ mkdir -p out
 MAKEFUN_INPUT_DIR=input MAKEFUN_OUTPUT_DIR=out python3 main.py
 ```
 
-Reads every `*.in` in `$MAKEFUN_INPUT_DIR` (default `/input`), writes one
-`<id>.out` per case to `$MAKEFUN_OUTPUT_DIR` (default `/output`). Stdlib only;
-deterministic; no network, no randomness.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+Deterministic (no randomness, no network), stdlib only.
